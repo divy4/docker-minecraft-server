@@ -1,0 +1,155 @@
+---
+apiVersion: v1
+data:
+  ops.json: |
+    [
+      {
+        "bypassesPlayerLimit": true,
+        "level": 4,
+        "name": "Notch",
+        "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5"
+      }
+    ]
+  server.properties: |
+    allow-flight=false
+    allow-nether=true
+    broadcast-console-to-ops=true
+    broadcast-rcon-to-ops=true
+    difficulty=easy
+    enable-command-block=false
+    enable-jmx-monitoring=false
+    enable-query=false
+    enable-rcon=false
+    enable-status=true
+    enforce-whitelist=false
+    entity-broadcast-range-percentage=100
+    force-gamemode=false
+    function-permission-level=2
+    gamemode=survival
+    generate-structures=true
+    generator-settings=
+    hardcore=false
+    level-name=world
+    level-seed=
+    level-type=default
+    max-build-height=256
+    max-players=20
+    max-tick-time=60000
+    max-world-size=29999984
+    motd=A Minecraft Server
+    network-compression-threshold=256
+    online-mode=true
+    op-permission-level=4
+    player-idle-timeout=0
+    prevent-proxy-connections=false
+    pvp=true
+    query.port=25565
+    rate-limit=0
+    rcon.password=
+    rcon.port=25575
+    resource-pack-sha1=
+    resource-pack=
+    server-ip=
+    server-port=25565
+    snooper-enabled=true
+    spawn-animals=true
+    spawn-monsters=true
+    spawn-npcs=true
+    spawn-protection=16
+    sync-chunk-writes=true
+    use-native-transport=true
+    view-distance=10
+    white-list=true
+  whitelist.json: |
+    [
+      {
+        "name": "Notch",
+        "uuid": "069a79f4-44e9-4726-a5be-fca90e38aaf5"
+      }
+    ]
+kind: ConfigMap
+metadata:
+  labels:
+    app: minecraft
+  name: minecraft
+  namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minecraft
+  name: minecraft
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minecraft
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: minecraft
+    spec:
+      containers:
+      - env:
+        - name: EULA
+          value: 'true'
+        image: divy4/minecraft-server
+        imagePullPolicy: IfNotPresent
+        name: minecraft
+        ports:
+        - containerPort: 25565
+        volumeMounts:
+        - mountPath: /minecraft/ops.json
+          name: config
+          subPath: ops.json
+        - mountPath: /minecraft/server.properties
+          name: config
+          subPath: server.properties
+        - mountPath: /minecraft/whitelist.json
+          name: config
+          subPath: whitelist.json
+      volumes:
+      - configMap:
+          name: minecraft
+        name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft
+  namespace: default
+spec:
+  ports:
+  - name: minecraft
+    nodePort: 30000
+    port: 25565
+    protocol: TCP
+    targetPort: 25565
+  selector:
+    app: minecraft
+  type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: minecraft
+  namespace: default
+spec:
+  egress:
+  - {} # TODO: develop outgoing traffic profile
+  ingress: # Allow ingress on 25565 TCP/UDP
+  - ports:
+    - port: 25565
+      protocol: TCP
+    - port: 25565
+      protocol: UDP
+  podSelector:
+    matchLabels:
+      app: minecraft
+  policyTypes:
+  - Egress
+  - Ingress
