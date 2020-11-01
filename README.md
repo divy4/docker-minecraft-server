@@ -22,7 +22,7 @@ great. If not, [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-
 The below command executes a Minecraft server in detach mode on port `25565`
 and stores any world data to `/some/directory`.
 
-```
+```sh
 docker run --detach --env EULA=true --publish 25565:25565 --volume /some/directory:/data divy4/minecraft-server
 ```
 
@@ -31,34 +31,40 @@ docker run --detach --env EULA=true --publish 25565:25565 --volume /some/directo
 For mounting additional minecraft config files (e.g. `ops.json`,
 `whitelist.json`, etc. In this example, `server.properties`.), add the following to right before `divy4/minecraft-server`:
 
-```
+```sh
 --volume /some/path/server.properties:/minecraft/server.properties:ro
 ```
 
 ## Using this Image with Kubernetes
 
-TODO
+This repo also comes with a Kubernetes manifest, which can be applied to a
+cluster like so:
 
+```sh
+kubectl apply -f kubernetes.yml
 ```
-TODO
-```
+
+The above will create a ConfigMap, Deployment, Service, and NetworkPolicy
+which contain various config files, a deployment of 1 pod, a NodePort mapping
+from port 30000 on any node to 25565 in the pod, and limits network traffic, respectively.
+Note that the `ops.json` and `whitelist.json` only contain `Notch`.
 
 ## Developing this Image
 
 ### Build the Image
 
-```
+```sh
 make build
 ```
 
 ### Run the Image
 
-```
+```sh
 make run
 ```
 
 ### Run the Image in Ash Instead of Starting the Server
 
-```
+```sh
 make shell
 ```
