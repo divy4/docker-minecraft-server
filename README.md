@@ -13,6 +13,8 @@ following:
   - This makes server upgrades easier
 - Doesn't download resources from the internet
   - This is good for zero-trust security
+- Gracefully shuts down the server when stopping the container
+  - This prevents world corruption and/or data loss
 
 If you're looking for an image that meets this criteria, this image should work
 great. If not, [itzg/minecraft-server](https://github.com/itzg/docker-minecraft-server) is probably a better option

@@ -8,7 +8,7 @@ RUN adduser -G minecraft --disabled-password --no-create-home --uid 1000 minecra
 RUN install -g minecraft -o minecraft -d /minecraft
 RUN install -g minecraft -o minecraft -d /data
 
-RUN apk add curl openjdk11-jre
+RUN apk add curl openjdk11-jre ruby
 
 USER minecraft
 
@@ -18,4 +18,4 @@ RUN curl --location "${server_jar_url}" --output server.jar
 
 COPY resources/* .
 
-CMD ./start.sh
+CMD ["ruby", "start.rb"]
